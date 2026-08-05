@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fog-Based Secure Traffic System</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: #e5e7eb;
+}
+header {
+    background: #020617;
+    padding: 15px;
+    text-align: center;
+    border-bottom: 2px solid #38bdf8;
+}
+header h1 { color: #38bdf8; }
+
+.container {
+    display: flex;
+    height: calc(100vh - 80px);
+}
+
+.sidebar {
+    width: 260px;
+    background: #020617;
+    padding: 20px;
+}
+.sidebar button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #1e293b;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.sidebar button:hover {
+    background: #38bdf8;
+    color: black;
+}
+
+.content {
+    flex: 1;
+    padding: 25px;
+}
+
+/* Layout */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+/* Cards */
+.card {
+    background: #020617;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(56,189,248,0.25);
+}
+
+/* TRAFFIC LIGHT */
+.traffic-box {
+    width: 140px;
+    height: 360px;
+    background: #0b1220;
+    border-radius: 25px;
+    padding: 20px;
+    margin: auto;
+    border: 3px solid #334155;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.signal {
+    width: 90px;
+    height: 90px;
+    background: #111827;
+    border-radius: 50%;
+    margin: auto;
+    border: 3px solid #374151;
+    box-shadow: inset 0 0 10px #000;
+    opacity: 0.25;
+}
+
+/* ACTIVE SIGNALS */
+.signal.red.active {
+    background: red;
+    box-shadow: 0 0 35px red;
+    opacity: 1;
+}
+.signal.yellow.active {
+    background: yellow;
+    box-shadow: 0 0 35px yellow;
+    opacity: 1;
+}
+.signal.green.active {
+    background: limegreen;
+    box-shadow: 0 0 35px limegreen;
+    opacity: 1;
+}
+
+/* Security */
+.security-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+.sec-card {
+    background: #111827;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+.sec-ok {
+    color: #22c55e;
+    font-size: 24px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Fog-Based Secure Intelligent Traffic System</h1>
+<p>Traffic Control • Visualization • Fog Security</p>
+</header>
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <button onclick="show('control')">Traffic Control</button>
+    <button onclick="show('visual')">Traffic Visualization</button>
+    <button onclick="show('security')">Fog Security</button>
+    <button onclick="show('attack')">Intrusion & Attack</button>
+</div>
+
+<div class="content">
+
+<!-- TRAFFIC CONTROL -->
+<div id="control">
+<div class="grid">
+
+<div class="card">
+<h2>Traffic Input</h2>
+<input id="vehicles" type="number" placeholder="Vehicle Count"><br><br>
+<input id="speed" type="number" placeholder="Average Speed"><br><br>
+<button onclick="analyze()">Analyze Traffic</button>
+</div>
+
+<div class="card">
+<h2>Traffic Light Control</h2>
+<div class="traffic-box">
+    <div id="light-red" class="signal red"></div>
+    <div id="light-yellow" class="signal yellow"></div>
+    <div id="light-green" class="signal green"></div>
+</div>
+<p id="decision"></p>
+</div>
+
+</div>
+</div>
+
+<!-- VISUALIZATION -->
+<div id="visual" style="display:none">
+<div class="card">
+<h2>Traffic Visualization</h2>
+<canvas id="trafficChart"></canvas>
+</div>
+</div>
+
+<!-- SECURITY -->
+<div id="security" style="display:none">
+<div class="card">
+<h2>Fog Security Framework</h2>
+<div class="security-grid">
+    <div class="sec-card"><div class="sec-ok">✔</div>Authentication</div>
+    <div class="sec-card"><div class="sec-ok">🔐</div>Encryption</div>
+    <div class="sec-card"><div class="sec-ok">🛡</div>IDS Active</div>
+    <div class="sec-card"><div class="sec-ok">⚡</div>Low Latency Fog</div>
+</div>
+</div>
+</div>
+
+<!-- ATTACK -->
+<div id="attack" style="display:none">
+<div class="card">
+<h2>Intrusion & Attack</h2>
+<p id="intrusion"></p>
+<p id="attackType"></p>
+</div>
+</div>
+
+</div>
+</div>
+
+<script>
+let chart;
+
+/* PAGE SWITCH */
+function show(id) {
+    ["control","visual","security","attack"].forEach(x =>
+        document.getElementById(x).style.display = "none");
+    document.getElementById(id).style.display = "block";
+}
+
+/* LIGHT RESET */
+function resetLights() {
+    ["light-red","light-yellow","light-green"].forEach(id =>
+        document.getElementById(id).classList.remove("active"));
+}
+
+/* ANALYZE */
+function analyze() {
+fetch("http://127.0.0.1:5000/analyze", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "Authorization": "FOG_SECURE_123"
+    },
+    body: JSON.stringify({
+        vehicle_count: vehicles.value,
+        avg_speed: speed.value
+    })
+})
+.then(res => res.json())
+.then(data => {
+    resetLights();
+
+    /* ✅ CORRECT MAPPING */
+    document.getElementById("light-" + data.light).classList.add("active");
+
+    decision.innerText = "Decision: " + data.decision;
+    intrusion.innerText = "Intrusion: " + data.intrusion;
+    attackType.innerText = "Attack: " + data.attack;
+
+    updateChart(data.vehicles, data.speed);
+});
+}
+
+/* GRAPH */
+function updateChart(v, s) {
+    if (chart) chart.destroy();
+    chart = new Chart(trafficChart, {
+        type: "bar",
+        data: {
+            labels: ["Vehicle Count", "Average Speed"],
+            datasets: [{
+                label: "Traffic Metrics",
+                data: [v, s]
+            }]
+        }
+    });
+}
+</script>
+
+</body>
+</html>
