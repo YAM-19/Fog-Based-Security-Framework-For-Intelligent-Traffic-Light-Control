@@ -1,0 +1,6 @@
+intersection_id,vehicle_count,avg_speed,time_of_day
+I1,45,32,morning
+I2,80,18,evening
+I3,30,40,afternoon
+I4,120,10,evening
+I5,20,50,night
